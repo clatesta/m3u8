@@ -54,10 +54,10 @@ def _load_from_uri(uri, timeout=None, headers={}, check_ssl=True):
     if check_ssl == True :
         resource = urlopen(request, timeout=timeout)
     else:
-        if PYTHON_MAJOR_VERSION < (2,7,10):
-            ctx = ssl.create_default_context()
+        if PYTHON_MAJOR_VERSION < (2,7,9):
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
             ctx.check_hostname = False
-            ctx.verify_mode=ssl.CERT_NONE
+            ctx.verify_mode = ssl.CERT_NONE
             resource = urlopen(request, timeout=timeout)
         else:
             resource = urlopen(request, timeout=timeout, context=ssl._create_unverified_context())
@@ -73,10 +73,10 @@ def _url_for(request, check_ssl):
     if check_ssl == True :
         base_uri = urlopen(request).geturl()
     else:
-        if PYTHON_MAJOR_VERSION < (2,7,10):
-            ctx = ssl.create_default_context()
+        if PYTHON_MAJOR_VERSION < (2,7,9):
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
             ctx.check_hostname = False
-            ctx.verify_mode=ssl.CERT_NONE
+            ctx.verify_mode = ssl.CERT_NONE
             resource = urlopen(request, timeout=timeout)
         else:
             base_uri = urlopen(request, context=ssl._create_unverified_context()).geturl()
