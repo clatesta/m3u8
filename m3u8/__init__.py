@@ -54,7 +54,13 @@ def _load_from_uri(uri, timeout=None, headers={}, check_ssl=True):
     if check_ssl == True :
         resource = urlopen(request, timeout=timeout)
     else:
-        resource = urlopen(request, timeout=timeout, context=ssl._create_unverified_context())
+        if PYTHON_MAJOR_VERSION < (2,7,10):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode=ssl.CERT_NONE
+            resource = urlopen(request, timeout=timeout)
+        else:
+            resource = urlopen(request, timeout=timeout, context=ssl._create_unverified_context())
     base_uri = _parsed_url(_url_for(request, check_ssl))
     if PYTHON_MAJOR_VERSION < (3,):
         content = _read_python2x(resource)
@@ -67,7 +73,13 @@ def _url_for(request, check_ssl):
     if check_ssl == True :
         base_uri = urlopen(request).geturl()
     else:
-        base_uri = urlopen(request, context=ssl._create_unverified_context()).geturl()
+        if PYTHON_MAJOR_VERSION < (2,7,10):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode=ssl.CERT_NONE
+            resource = urlopen(request, timeout=timeout)
+        else:
+            base_uri = urlopen(request, context=ssl._create_unverified_context()).geturl()
     return base_uri
 
 
