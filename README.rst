@@ -192,6 +192,18 @@ Running Tests
 
     $ ./runtests
 
+Local install
+============
+
+To install the code locally, just run:
+
+::
+
+    $ sudo pip install .
+
+Use the option '--upgrade' to install the locally patched code.
+
+
 Contributing
 ============
 

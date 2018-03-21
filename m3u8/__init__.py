@@ -6,6 +6,7 @@
 import sys
 import os
 import posixpath
+import ssl
 
 try:
     from urllib.request import urlopen, Request
@@ -32,25 +33,29 @@ def loads(content):
     return M3U8(content)
 
 
-def load(uri, timeout=None, headers={}):
+def load(uri, timeout=None, headers={}, check_ssl=True):
     '''
     Retrieves the content from a given URI and returns a M3U8 object.
     Raises ValueError if invalid content or IOError if request fails.
     Raises socket.timeout(python 2.7+) or urllib2.URLError(python 2.6) if
     timeout happens when loading from uri
+    "check_ssl" param is used to avoid the check of the SSL certificate, if needed
     '''
     if is_url(uri):
-        return _load_from_uri(uri, timeout, headers)
+        return _load_from_uri(uri, timeout, headers, check_ssl)
     else:
         return _load_from_file(uri)
 
 # Support for python3 inspired by https://github.com/szemtiv/m3u8/
 
 
-def _load_from_uri(uri, timeout=None, headers={}):
+def _load_from_uri(uri, timeout=None, headers={}, check_ssl=True):
     request = Request(uri, headers=headers)
-    resource = urlopen(request, timeout=timeout)
-    base_uri = _parsed_url(_url_for(request))
+    if check_ssl == True :
+        resource = urlopen(request, timeout=timeout)
+    else:
+        resource = urlopen(request, timeout=timeout, context=ssl._create_unverified_context())
+    base_uri = _parsed_url(_url_for(request, check_ssl))
     if PYTHON_MAJOR_VERSION < (3,):
         content = _read_python2x(resource)
     else:
@@ -58,8 +63,12 @@ def _load_from_uri(uri, timeout=None, headers={}):
     return M3U8(content, base_uri=base_uri)
 
 
-def _url_for(request):
-    return urlopen(request).geturl()
+def _url_for(request, check_ssl):
+    if check_ssl == True :
+        base_uri = urlopen(request).geturl()
+    else:
+        base_uri = urlopen(request, context=ssl._create_unverified_context()).geturl()
+    return base_uri
 
 
 def _parsed_url(url):
